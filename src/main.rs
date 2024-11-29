@@ -62,17 +62,24 @@ fn build_ui(app: &gtk::Application) {
         app_clone.quit();
     });
 
+    let countdown_button = gtk::Button::new();
     let countdown_label = Label::new(Some("Countdown"));
     countdown_label.set_markup("<b><span font-size='18000'>Countdown</span></b>");
-    let countdown_button = gtk::Button::new();
     countdown_button.add(&countdown_label);
     countdown_button.set_halign(Align::Center);
     countdown_button.set_valign(Align::Center);
     let app_clone = app.clone();
+    let countdown_label_clone = countdown_label.clone();
     countdown_button.connect_clicked(move |_| {
         let app_clone = app_clone.clone();
+        let countdown_label_clone = countdown_label_clone.clone();
         MainContext::default().spawn_local(async move {
-            glib::timeout_future(Duration::from_secs(3)).await;
+            countdown_label_clone.set_markup("<b><span font-size='36000'>3</span></b>");
+            glib::timeout_future(Duration::from_secs(1)).await;
+            countdown_label_clone.set_markup("<b><span font-size='36000'>2</span></b>");
+            glib::timeout_future(Duration::from_secs(1)).await;
+            countdown_label_clone.set_markup("<b><span font-size='36000'>1</span></b>");
+            glib::timeout_future(Duration::from_secs(1)).await;
             app_clone.quit();
         });
     });
