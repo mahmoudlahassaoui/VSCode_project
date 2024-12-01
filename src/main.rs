@@ -3,6 +3,7 @@ use gtk::{Application, ApplicationWindow, Box, Orientation, Align, Label};
 use rand::Rng;
 use gtk::glib::{self, MainContext};
 use std::time::Duration;
+use std::process::Command;
 
 fn main() {
     if gtk::init().is_err() {
@@ -49,6 +50,7 @@ fn build_ui(app: &gtk::Application) {
         let css_provider = gtk::CssProvider::new();
         let _ = css_provider.load_from_data(format!("window {{ background-color: rgb({}, {}, {}); }}", (r*255.0) as u8, (g*255.0) as u8, (b*255.0) as u8).as_bytes());
         window_clone.style_context().add_provider(&css_provider, gtk::STYLE_PROVIDER_PRIORITY_USER);
+        Command::new("aplay").arg("/home/toor/Desktop/VSCode_project/click.mp3").stdout(std::process::Stdio::null()).spawn().unwrap();
     });
 
     let exit_label = Label::new(Some("Exit"));
@@ -59,6 +61,7 @@ fn build_ui(app: &gtk::Application) {
     exit_button.set_valign(Align::Center);
     let app_clone = app.clone();
     exit_button.connect_clicked(move |_| {
+        Command::new("aplay").arg("/home/toor/Desktop/VSCode_project/click.mp3").stdout(std::process::Stdio::null()).spawn().unwrap();
         app_clone.quit();
     });
 
@@ -71,6 +74,7 @@ fn build_ui(app: &gtk::Application) {
     let app_clone = app.clone();
     let countdown_label_clone = countdown_label.clone();
     countdown_button.connect_clicked(move |_| {
+        Command::new("aplay").arg("/home/toor/Desktop/VSCode_project/click.mp3").stdout(std::process::Stdio::null()).spawn().unwrap();
         let app_clone = app_clone.clone();
         let countdown_label_clone = countdown_label_clone.clone();
         MainContext::default().spawn_local(async move {
