@@ -48,7 +48,8 @@ fn build_ui(app: &gtk::Application) {
         let g: f64 = rng.gen_range(0.0..1.0);
         let b: f64 = rng.gen_range(0.0..1.0);
         let css_provider = gtk::CssProvider::new();
-        let _ = css_provider.load_from_data(format!("window {{ background-color: rgb({}, {}, {}); }}", (r*255.0) as u8, (g*255.0) as u8, (b*255.0) as u8).as_bytes());
+        let color_css = format!("window {{ background-color: rgb({}, {}, {}); transition: background-color 1s; }}", (r*255.0) as u8, (g*255.0) as u8, (b*255.0) as u8);
+        let _ = css_provider.load_from_data(color_css.as_bytes());
         window_clone.style_context().add_provider(&css_provider, gtk::STYLE_PROVIDER_PRIORITY_USER);
         if let Err(e) = Command::new("aplay").arg("/home/toor/Desktop/VSCode_project/click.wav").stdout(std::process::Stdio::null()).spawn() {
             println!("Error playing sound: {:?}", e);
