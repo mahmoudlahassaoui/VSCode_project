@@ -1,5 +1,5 @@
 use gtk::prelude::*;
-use gtk::{Application, ApplicationWindow, Box, Orientation, Align, Label, MenuBar, MenuItem, Menu, AboutDialog};
+use gtk::{Application, ApplicationWindow, Box, Orientation, Align, Label, MenuBar, MenuItem, Menu, AboutDialog, ColorButton, Dialog, DialogFlags, Adjustment, Scale};
 use rand::Rng;
 use gtk::glib::{self, MainContext};
 use std::time::Duration;
@@ -63,6 +63,67 @@ fn build_ui(app: &gtk::Application) {
     });
     help_menu.append(&about_item);
 
+    // Create a Settings menu
+    let settings_menu = Menu::new();
+    let settings_menu_item = MenuItem::with_label("Settings");
+    settings_menu_item.set_submenu(Some(&settings_menu));
+    menubar.append(&settings_menu_item);
+
+    // Add items to the Settings menu
+    let label = Label::new(Some("Click me!"));
+    label.set_markup("<b><span font_size='18000'>Click me!</span></b>");
+    let button = gtk::Button::new();
+    button.add(&label);
+    button.set_halign(Align::Center);
+    button.set_valign(Align::Center);
+
+    let preferences_item = MenuItem::with_label("Preferences");
+    let window_clone = window.clone();
+    let button_clone = button.clone();
+    preferences_item.connect_activate(move |_| {
+        let dialog = Dialog::with_buttons::<ApplicationWindow>(Some("Preferences"), None, DialogFlags::empty(), &[("OK", gtk::ResponseType::Ok.into()), ("Cancel", gtk::ResponseType::Cancel.into())]);
+        let content_area = dialog.content_area();
+        let color_label = Label::new(Some("Background Color:"));
+        content_area.pack_start(&color_label, true, true, 0);
+        let color_button = ColorButton::new();
+        content_area.pack_start(&color_button, true, true, 0);
+
+        let font_size_label = Label::new(Some("Font Size:"));
+        content_area.pack_start(&font_size_label, true, true, 0);
+        let adjustment = Adjustment::new(18.0, 6.0, 72.0, 1.0, 1.0, 1.0);
+        let font_size_scale = Scale::new(Orientation::Horizontal, Some(&adjustment));
+        content_area.pack_start(&font_size_scale, true, true, 0);
+
+
+        let response = dialog.run();
+        if response == gtk::ResponseType::Ok.into() {
+            let color = color_button.rgba();
+            let css_provider = gtk::CssProvider::new();
+            let color_css = format!(
+                "window {{ background-color: rgb({}, {}, {}); }}",
+                (color.red() * 255.0) as u8,
+                (color.green() * 255.0) as u8,
+                (color.blue() * 255.0) as u8
+            );
+            let _ = css_provider.load_from_data(color_css.as_bytes());
+            window_clone.style_context().add_provider(&css_provider, gtk::STYLE_PROVIDER_PRIORITY_USER);
+
+            let font_size = font_size_scale.value() as i32;
+            let label_text = format!("<b><span font_size='{}'>Click me!</span></b>", font_size);
+
+            // Update the existing label
+            if let Some(child) = button_clone.child() { 
+                if let Ok(label) = child.downcast::<Label>() {
+                    label.set_markup(&label_text);
+                    button_clone.queue_draw(); 
+                }
+            }
+        }
+        dialog.close();
+    });
+    settings_menu.append(&preferences_item);
+
+
 
     let vbox = Box::builder()
         .orientation(Orientation::Vertical)
@@ -70,7 +131,7 @@ fn build_ui(app: &gtk::Application) {
         .build();
 
     let label = Label::new(Some("Click me!"));
-    label.set_markup("<b><span font-size='18000'>Click me!</span></b>");
+    label.set_markup("<b><span font_size='18000'>Click me!</span></b>");
     let button = gtk::Button::new();
     button.add(&label);
     button.set_halign(Align::Center);
@@ -91,7 +152,7 @@ fn build_ui(app: &gtk::Application) {
     });
 
     let exit_label = Label::new(Some("Exit"));
-    exit_label.set_markup("<b><span font-size='18000'>Exit</span></b>");
+    exit_label.set_markup("<b><span font_size='18000'>Exit</span></b>");
     let exit_button = gtk::Button::new();
     exit_button.add(&exit_label);
     exit_button.set_halign(Align::Center);
@@ -106,7 +167,7 @@ fn build_ui(app: &gtk::Application) {
 
     let countdown_button = gtk::Button::new();
     let countdown_label = Label::new(Some("Countdown"));
-    countdown_label.set_markup("<b><span font-size='18000'>Countdown</span></b>");
+    countdown_label.set_markup("<b><span font_size='18000'>Countdown</span></b>");
     countdown_button.add(&countdown_label);
     countdown_button.set_halign(Align::Center);
     countdown_button.set_valign(Align::Center);
@@ -119,11 +180,11 @@ fn build_ui(app: &gtk::Application) {
         let app_clone = app_clone.clone();
         let countdown_label_clone = countdown_label_clone.clone();
         MainContext::default().spawn_local(async move {
-            countdown_label_clone.set_markup("<b><span font-size='36000'>3</span></b>");
+            countdown_label_clone.set_markup("<b><span font_size='36000'>3</span></b>");
             glib::timeout_future(Duration::from_secs(1)).await;
-            countdown_label_clone.set_markup("<b><span font-size='36000'>2</span></b>");
+            countdown_label_clone.set_markup("<b><span font_size='36000'>2</span></b>");
             glib::timeout_future(Duration::from_secs(1)).await;
-            countdown_label_clone.set_markup("<b><span font-size='36000'>1</span></b>");
+            countdown_label_clone.set_markup("<b><span font_size='36000'>1</span></b>");
             glib::timeout_future(Duration::from_secs(1)).await;
             app_clone.quit();
         });
