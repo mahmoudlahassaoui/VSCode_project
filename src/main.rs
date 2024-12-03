@@ -1,5 +1,5 @@
 use gtk::prelude::*;
-use gtk::{Application, ApplicationWindow, Box, Orientation, Align, Label};
+use gtk::{Application, ApplicationWindow, Box, Orientation, Align, Label, MenuBar, MenuItem, Menu, AboutDialog};
 use rand::Rng;
 use gtk::glib::{self, MainContext};
 use std::time::Duration;
@@ -29,6 +29,40 @@ fn build_ui(app: &gtk::Application) {
         .build();
 
     window.set_position(gtk::WindowPosition::Center);
+
+    // Create a MenuBar
+    let menubar = MenuBar::new();
+
+    // Create a File menu
+    let file_menu = Menu::new();
+    let file_menu_item = MenuItem::with_label("File");
+    file_menu_item.set_submenu(Some(&file_menu));
+    menubar.append(&file_menu_item);
+
+    // Add items to the File menu
+    let exit_item = MenuItem::with_label("Exit");
+    let app_clone = app.clone();
+    exit_item.connect_activate(move |_| app_clone.quit());
+    file_menu.append(&exit_item);
+
+    // Create a Help menu
+    let help_menu = Menu::new();
+    let help_menu_item = MenuItem::with_label("Help");
+    help_menu_item.set_submenu(Some(&help_menu));
+    menubar.append(&help_menu_item);
+
+    // Add items to the Help menu
+    let about_item = MenuItem::with_label("About");
+    about_item.connect_activate(|_| {
+        let about_dialog = AboutDialog::new();
+        about_dialog.set_program_name("Simple GTK App");
+        about_dialog.set_version(Some("0.1"));
+        about_dialog.set_comments(Some("A simple GTK application with a menu bar."));
+        about_dialog.run();
+        about_dialog.close();
+    });
+    help_menu.append(&about_item);
+
 
     let vbox = Box::builder()
         .orientation(Orientation::Vertical)
@@ -102,6 +136,7 @@ fn build_ui(app: &gtk::Application) {
     hbox.pack_start(&button, true, true, 0);
     hbox.pack_start(&countdown_button, true, true, 0);
     hbox.pack_start(&exit_button, true, true, 0);
+    vbox.pack_start(&menubar, false, false, 0);
     vbox.pack_start(&hbox, true, true, 0);
     window.add(&vbox);
     window.show_all();
